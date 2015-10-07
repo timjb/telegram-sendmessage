@@ -51,8 +51,8 @@ readConfig = do
 usage :: IO ()
 usage =
   exitWithErrorMsg $
-    "Usage: ./telegram your message goes here\n\n" <>
-    "This uses the Telegram API to send a message to" <>
+    "Usage: `telegram your message goes here`\n\n" <>
+    "This uses the Telegram API to send a message to\n" <>
     "all users having a conversation with the bot.\n" <>
     "You need to get an API token first and put it in\n" <>
     "  " <> configFile <> "\n" <>
