@@ -68,16 +68,6 @@ sendMessage token msg = do
           map (TG.chat_id . TG.chat) $
             mapMaybe TG.message $
               TG.update_result res
-  -- let tgApi = telegramApi token
-  -- updatesJson <- tgApi "getUpdates" defaults
-  -- let uniq = concat . map (take 1) . group . sort
-  --     userIds = uniq $ updatesJson ^.. values . key "message" . key "from" . key "id" . _Integer
-  -- forM_ userIds $ \userId -> do
-  --   void $ tgApi "sendMessage" $
-  --     defaults & param "chat_id" .~ [pack (show userId)]
-  --              & param "text" .~ [pack msg]
-  --   putStrLn $ "Sent message to " <> show userId
-
 
 main :: IO ()
 main = do
