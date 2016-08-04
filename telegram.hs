@@ -6,8 +6,8 @@
 
 module Main (main) where
 
-import Control.Exception
-import Control.Monad (when, forM_, void)
+import Control.Exception (IOException, catch)
+import Control.Monad (when, forM_)
 import Data.Maybe (mapMaybe)
 import Data.Monoid ((<>))
 import Data.Text (pack, strip)
@@ -15,10 +15,10 @@ import qualified Data.Text.IO as T (readFile)
 import Network.HTTP.Client (newManager)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import System.Directory (getHomeDirectory)
-import System.Environment
-import System.Exit
+import System.Environment (getArgs)
+import System.Exit (ExitCode(ExitFailure), exitWith)
 import System.FilePath ((</>))
-import System.IO
+import System.IO (hPutStrLn, stderr)
 import qualified Web.Telegram.API.Bot as TG
 
 exitWithErrorMsg :: String -> IO a
