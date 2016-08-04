@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-3.8 --install-ghc runghc --package wreq --package directory
+-- stack --resolver lts-6.8 --install-ghc runghc --package wreq --package directory
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
