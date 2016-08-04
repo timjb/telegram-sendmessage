@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-6.8 --install-ghc runghc --package wreq --package directory
+-- stack --resolver lts-6.8 --install-ghc runghc --package telegram-api --package text --package directory --package filepath --package http-client --package http-client-tls
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
