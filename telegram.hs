@@ -58,7 +58,7 @@ sendMessage token msg = do
   manager <- newManager tlsManagerSettings
   updatesResponse <- TG.getUpdates token Nothing Nothing Nothing manager
   case updatesResponse of
-    Left err -> exitWithErrorMsg $ show err
+    Left err -> exitWithErrorMsg "Could not call getUpdates!"
     Right res ->
       forM_ userIds $ \userId ->
         let request = TG.sendMessageRequest (pack $ show userId) (pack msg)
