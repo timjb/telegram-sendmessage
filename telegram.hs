@@ -8,8 +8,6 @@ module Main (main) where
 
 import Control.Exception
 import Control.Monad (when, forM_, void)
-import Data.Char (isSpace)
-import Data.List (sort, group)
 import Data.Maybe (mapMaybe)
 import Data.Monoid ((<>))
 import Data.Text (pack, strip)
