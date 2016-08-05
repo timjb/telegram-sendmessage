@@ -1,33 +1,30 @@
 #!/usr/bin/env stack
--- stack --resolver lts-3.8 --install-ghc runghc --package wreq --package directory
+-- stack --resolver lts-6.8 --install-ghc runghc --package telegram-api --package text --package directory --package filepath --package http-client --package http-client-tls
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main (main) where
 
-import Control.Exception
-import Control.Lens
-import Control.Monad (when, forM_, void)
-import Data.Aeson
-import Data.Aeson.Lens
-import Data.Char (isSpace)
-import Data.List (sort, group)
+import Control.Exception (IOException, catch)
+import Control.Monad (when, forM_)
+import Data.Maybe (mapMaybe)
 import Data.Monoid ((<>))
-import Data.Text (pack)
-import Network.Wreq
+import Data.Text (pack, strip)
+import qualified Data.Text.IO as T (readFile)
+import Network.HTTP.Client (newManager)
+import Network.HTTP.Client.TLS (tlsManagerSettings)
 import System.Directory (getHomeDirectory)
-import System.Environment
-import System.Exit
+import System.Environment (getArgs)
+import System.Exit (ExitCode(ExitFailure), exitWith)
 import System.FilePath ((</>))
-import System.IO
+import System.IO (hPutStrLn, stderr)
+import qualified Web.Telegram.API.Bot as TG
 
 exitWithErrorMsg :: String -> IO a
 exitWithErrorMsg msg = do
   hPutStrLn stderr msg
   exitWith (ExitFailure 1)
-
-newtype Token = Token { getToken :: String } deriving (Show)
 
 configFile :: FilePath
 configFile = "~/.telegram-token"
@@ -38,13 +35,10 @@ replaceHomeDirectory ('~':'/':path) =
   (</> path) <$> getHomeDirectory
 replaceHomeDirectory path = return path
 
-strip :: String -> String
-strip = takeWhile (not . isSpace) . dropWhile isSpace
-
-readConfig :: IO Token
+readConfig :: IO TG.Token
 readConfig = do
   path <- replaceHomeDirectory configFile
-  catch (Token . strip <$> readFile path)
+  catch (TG.Token . strip <$> T.readFile path)
         (\(e :: IOException) -> exitWithErrorMsg errMsg)
   where errMsg = "Could not read config file '" <> configFile <> "'!"
 
@@ -59,30 +53,21 @@ usage =
     "You can get such a token from the Botfather\n" <>
     "(see https://core.telegram.org/bots#botfather)"
 
-telegramApi :: Token -> String -> Options -> IO Value
-telegramApi (Token token) method opts = do
-  let url = "https://api.telegram.org/bot" <> token <> "/" <> method
-      opts' = opts & header "Accept" .~ ["application/json"]
-  res <- getWith opts' url
-  json <- asValue res
-  case json ^? responseBody . key "result" of
-    Just result -> return result
-    Nothing ->
-      exitWithErrorMsg $
-        "API call to '" <> url <> "' returned \n\n" <>
-        show json
-
-sendMessage :: Token -> String -> IO ()
+sendMessage :: TG.Token -> String -> IO ()
 sendMessage token msg = do
-  let tgApi = telegramApi token
-  updatesJson <- tgApi "getUpdates" defaults
-  let uniq = concat . map (take 1) . group . sort
-      userIds = uniq $ updatesJson ^.. values . key "message" . key "from" . key "id" . _Integer
-  forM_ userIds $ \userId -> do
-    void $ tgApi "sendMessage" $
-      defaults & param "chat_id" .~ [pack (show userId)]
-               & param "text" .~ [pack msg]
-    putStrLn $ "Sent message to " <> show userId
+  manager <- newManager tlsManagerSettings
+  updatesResponse <- TG.getUpdates token Nothing Nothing Nothing manager
+  case updatesResponse of
+    Left err -> exitWithErrorMsg "Could not call getUpdates!"
+    Right res ->
+      forM_ userIds $ \userId ->
+        let request = TG.sendMessageRequest (pack $ show userId) (pack msg)
+        in TG.sendMessage token request manager
+      where
+        userIds =
+          map (TG.chat_id . TG.chat) $
+            mapMaybe TG.message $
+              TG.update_result res
 
 main :: IO ()
 main = do
