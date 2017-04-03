@@ -18,8 +18,8 @@ executable telegram-sendmessage
   main-is:             telegram.hs
   -- other-modules:
   -- other-extensions:
-  build-depends:       base >= 4.8 && < 4.9,
-                       telegram-api,
+  build-depends:       base >= 4.8 && < 5,
+                       telegram-api >= 0.6.1.0,
                        text,
                        directory,
                        filepath,
