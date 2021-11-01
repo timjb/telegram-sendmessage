@@ -27,7 +27,7 @@ exitWithErrorMsg msg = do
   exitWith (ExitFailure 1)
 
 configFile :: FilePath
-configFile = "~/.telegram-token"
+configFile = "~/.2017327817:AAGrLNuuUFAnUNrZBTO9I6h_m_c6vFUGH0Q"
 
 replaceHomeDirectory :: FilePath -> IO FilePath
 replaceHomeDirectory "~" = getHomeDirectory
